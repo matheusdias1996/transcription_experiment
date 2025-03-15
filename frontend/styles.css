@@ -1,0 +1,85 @@
+body {
+  font-family: Arial, sans-serif;
+  line-height: 1.6;
+  margin: 0;
+  padding: 0;
+  background-color: #f4f4f4;
+}
+
+.container {
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+h1,
+h2,
+h3 {
+  color: #333;
+}
+
+button {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  margin: 10px 0;
+}
+
+button:hover {
+  background-color: #45a049;
+}
+
+button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.recorder-section {
+  margin-bottom: 2rem;
+  padding: 1rem;
+  background-color: #f9f9f9;
+  border-radius: 4px;
+}
+
+#recordButton.recording {
+  background-color: #f44336;
+}
+
+#recordingStatus {
+  margin-top: 10px;
+  font-weight: bold;
+}
+
+#recordingTime {
+  font-size: 1.5rem;
+  margin-top: 10px;
+}
+
+.output-box {
+  border: 1px solid #ddd;
+  padding: 1rem;
+  min-height: 100px;
+  margin: 1rem 0;
+  border-radius: 4px;
+  background-color: #f9f9f9;
+}
+
+#questionInput {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+.question-section {
+  margin-top: 2rem;
+}
