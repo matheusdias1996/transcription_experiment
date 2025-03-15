@@ -1,0 +1,15 @@
+{
+  "test_audio_0.2s.wav": "You",
+  "test_audio_0.5s.wav": "BEEP",
+  "test_audio_1.0s.wav": "Oh",
+  "test_audio_2.0s.wav": "Beeeeeeeeeeep",
+  "word_hello_0.2s.wav": "Woo!",
+  "word_hello_0.5s.wav": "Woo!",
+  "word_hello_1.0s.wav": "Ooh.",
+  "word_test_0.2s.wav": "You",
+  "word_test_0.5s.wav": "Oh",
+  "word_test_1.0s.wav": "Oh",
+  "word_you_0.2s.wav": "You",
+  "word_you_0.5s.wav": "Woo!",
+  "word_you_1.0s.wav": "Woo!"
+}

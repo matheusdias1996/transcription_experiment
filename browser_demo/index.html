@@ -1,0 +1,136 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Audio Transcription Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .result-box { border: 1px solid #ccc; padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .audio-player { margin: 10px 0; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .you-highlight { background-color: #ffcccc; }
+    </style>
+</head>
+<body>
+    <div class='container'>
+        <h1>Audio Transcription Test Results</h1>
+        <p>This page demonstrates the test results for different audio durations and their transcription by the OpenAI Whisper API.</p>
+        
+        <h2>Test Audio Files</h2>
+        <table>
+            <tr>
+                <th>Audio File</th>
+                <th>Duration</th>
+                <th>Transcription</th>
+                <th>Listen</th>
+            </tr>
+            
+                <tr class="you-highlight">
+                    <td>Tone 0.2s</td>
+                    <td>0.2s</td>
+                    <td>You</td>
+                    <td><audio controls src="../test_audio_files/test_audio_0.2s.wav" class="audio-player"></audio></td>
+                </tr>
+                
+                <tr>
+                    <td>Tone 0.5s</td>
+                    <td>0.5s</td>
+                    <td>BEEP</td>
+                    <td><audio controls src="../test_audio_files/test_audio_0.5s.wav" class="audio-player"></audio></td>
+                </tr>
+                
+                <tr>
+                    <td>Tone 1.0s</td>
+                    <td>1.0s</td>
+                    <td>Oh</td>
+                    <td><audio controls src="../test_audio_files/test_audio_1.0s.wav" class="audio-player"></audio></td>
+                </tr>
+                
+                <tr>
+                    <td>Tone 2.0s</td>
+                    <td>2.0s</td>
+                    <td>Beeeeeeeeeeep</td>
+                    <td><audio controls src="../test_audio_files/test_audio_2.0s.wav" class="audio-player"></audio></td>
+                </tr>
+                
+                <tr>
+                    <td>Word "hello" 0.2s</td>
+                    <td>0.2s</td>
+                    <td>Woo!</td>
+                    <td><audio controls src="../test_audio_files/word_hello_0.2s.wav" class="audio-player"></audio></td>
+                </tr>
+                
+                <tr>
+                    <td>Word "hello" 0.5s</td>
+                    <td>0.5s</td>
+                    <td>Woo!</td>
+                    <td><audio controls src="../test_audio_files/word_hello_0.5s.wav" class="audio-player"></audio></td>
+                </tr>
+                
+                <tr>
+                    <td>Word "hello" 1.0s</td>
+                    <td>1.0s</td>
+                    <td>Ooh.</td>
+                    <td><audio controls src="../test_audio_files/word_hello_1.0s.wav" class="audio-player"></audio></td>
+                </tr>
+                
+                <tr class="you-highlight">
+                    <td>Word "test" 0.2s</td>
+                    <td>0.2s</td>
+                    <td>You</td>
+                    <td><audio controls src="../test_audio_files/word_test_0.2s.wav" class="audio-player"></audio></td>
+                </tr>
+                
+                <tr>
+                    <td>Word "test" 0.5s</td>
+                    <td>0.5s</td>
+                    <td>Oh</td>
+                    <td><audio controls src="../test_audio_files/word_test_0.5s.wav" class="audio-player"></audio></td>
+                </tr>
+                
+                <tr>
+                    <td>Word "test" 1.0s</td>
+                    <td>1.0s</td>
+                    <td>Oh</td>
+                    <td><audio controls src="../test_audio_files/word_test_1.0s.wav" class="audio-player"></audio></td>
+                </tr>
+                
+                <tr class="you-highlight">
+                    <td>Word "you" 0.2s</td>
+                    <td>0.2s</td>
+                    <td>You</td>
+                    <td><audio controls src="../test_audio_files/word_you_0.2s.wav" class="audio-player"></audio></td>
+                </tr>
+                
+                <tr>
+                    <td>Word "you" 0.5s</td>
+                    <td>0.5s</td>
+                    <td>Woo!</td>
+                    <td><audio controls src="../test_audio_files/word_you_0.5s.wav" class="audio-player"></audio></td>
+                </tr>
+                
+                <tr>
+                    <td>Word "you" 1.0s</td>
+                    <td>1.0s</td>
+                    <td>Woo!</td>
+                    <td><audio controls src="../test_audio_files/word_you_1.0s.wav" class="audio-player"></audio></td>
+                </tr>
+                
+        </table>
+        
+        <h2>Analysis</h2>
+        <div class='result-box'>
+            <p><strong>Finding:</strong> Short audio chunks (less than 0.5 seconds) are consistently transcribed as 'You' by the OpenAI Whisper API.</p>
+            <p><strong>Solution:</strong> We implemented two fixes:</p>
+            <ol>
+                <li>Increased the frontend MediaRecorder timeslice from 1000ms to 2000ms</li>
+                <li>Added backend audio buffering to ensure chunks are at least 0.5 seconds before transcription</li>
+            </ol>
+            <p>These changes prevent the 'You you you' transcription issue while maintaining real-time responsiveness.</p>
+        </div>
+    </div>
+</body>
+</html>
