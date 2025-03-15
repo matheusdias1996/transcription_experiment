@@ -284,4 +284,4 @@ def handle_question(data):
 
 
 if __name__ == "__main__":
-    socketio.run(app, debug=True, use_reloader=True, log_output=True)
+    socketio.run(app, debug=True, use_reloader=True, log_output=True, allow_unsafe_werkzeug=True)
