@@ -1,5 +1,5 @@
-import openai
 import os
+from openai import OpenAI
 
 def transcribe_audio(audio_file_path):
     """
@@ -12,17 +12,17 @@ def transcribe_audio(audio_file_path):
         str: Transcribed text
     """
     # Get API key from environment variables
-    openai.api_key = os.getenv("OPENAI_API_KEY")
+    api_key = os.getenv("OPENAI_API_KEY")
     
     # Check if API key is set
-    if not openai.api_key:
+    if not api_key:
         raise ValueError("OpenAI API key is not set in environment variables")
     
     try:
         with open(audio_file_path, "rb") as audio_file:
             # For newer OpenAI client versions (0.27.0+)
             try:
-                client = openai.OpenAI(api_key=openai.api_key)
+                client = OpenAI(api_key=api_key)
                 transcript = client.audio.transcriptions.create(
                     file=audio_file,
                     model="whisper-1"
@@ -31,10 +31,9 @@ def transcribe_audio(audio_file_path):
             except Exception as e:
                 # If there's an error with the newer client, try the older approach
                 audio_file.seek(0)  # Reset file pointer to beginning
-                response = openai.Audio.transcribe(
-                    "whisper-1",
-                    audio_file
-                )
+                # This fallback is for older OpenAI versions and may not work with current versions
+                # Consider updating your OpenAI package if this is needed
+                raise Exception("OpenAI client version not compatible. Please update to the latest version.")
                 
                 # Handle different response formats
                 if isinstance(response, str):
@@ -61,14 +60,14 @@ def translate_text(text, target_language):
         str: Translated text
     """
     # Get API key from environment variables
-    openai.api_key = os.getenv("OPENAI_API_KEY")
+    api_key = os.getenv("OPENAI_API_KEY")
     
     # Check if API key is set
-    if not openai.api_key:
+    if not api_key:
         raise ValueError("OpenAI API key is not set in environment variables")
     
     try:
-        client = openai.OpenAI(api_key=openai.api_key)
+        client = OpenAI(api_key=api_key)
         
         # Use GPT-4o for translation as requested by the user
         response = client.chat.completions.create(
