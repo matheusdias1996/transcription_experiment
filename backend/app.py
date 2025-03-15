@@ -18,6 +18,12 @@ socketio = SocketIO(app, cors_allowed_origins="*")
 
 # Global variable to store ongoing transcription
 ongoing_transcription = ""
+# Global variables for audio buffering
+audio_buffer = b""
+buffer_sample_rate = 16000  # 16kHz sample rate
+# Minimum buffer size to avoid "You" transcriptions
+# OpenAI Whisper API transcribes very short audio chunks (< 0.5s) as "You"
+min_buffer_size = 8000  # 0.5 seconds of audio at 16kHz
 
 
 @app.route("/api/transcribe", methods=["POST"])
@@ -111,6 +117,10 @@ def handle_disconnect():
 @socketio.on("audio_chunk")
 def handle_audio_chunk(data):
     global ongoing_transcription
+    # Add global variables for audio buffering
+    global audio_buffer
+    global buffer_sample_rate
+    global min_buffer_size
 
     try:
         # Get the base64 audio chunk
@@ -126,6 +136,23 @@ def handle_audio_chunk(data):
 
         # Check if this is a dummy chunk (for testing environments without microphone)
         is_dummy = len(audio_data) < 100 and b"dummy" in audio_data
+
+        # For real audio (not dummy), implement buffering
+        if not is_dummy:
+            global audio_buffer
+            # Add current chunk to buffer
+            audio_buffer += audio_data
+
+            # If buffer is too small, store it and wait for more chunks
+            if len(audio_buffer) < min_buffer_size:
+                # Just update the UI with current transcription, don't process yet
+                emit("transcription_update", {"transcription": ongoing_transcription})
+                return
+
+            # Use the buffered audio instead of just the current chunk
+            audio_data = audio_buffer
+            # Reset buffer after using it
+            audio_buffer = b""
 
         # Save to a temporary file with proper WAV headers
         temp_path = "temp_chunk.wav"
@@ -170,7 +197,17 @@ def handle_audio_chunk(data):
             # Clean up in case of error
             if os.path.exists(temp_path):
                 os.remove(temp_path)
-            emit("error", {"message": str(e)})
+
+            # Provide clear error message for API key issues
+            if "API key" in str(e) or "authentication" in str(e).lower():
+                emit(
+                    "error",
+                    {
+                        "message": "OpenAI API key is missing or invalid. Please check your configuration."
+                    },
+                )
+            else:
+                emit("error", {"message": str(e)})
     except Exception as e:
         import traceback
 
@@ -183,7 +220,9 @@ def handle_audio_chunk(data):
 @socketio.on("reset_transcription")
 def handle_reset_transcription():
     global ongoing_transcription
+    global audio_buffer
     ongoing_transcription = ""
+    audio_buffer = b""  # Reset audio buffer when transcription is reset
     emit("transcription_update", {"transcription": ongoing_transcription})
 
 

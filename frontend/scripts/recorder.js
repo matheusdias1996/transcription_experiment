@@ -29,8 +29,8 @@ class AudioRecorder {
           }
         });
         
-        // Start with timeslice of 1000ms (1 second) to get frequent chunks
-        this.mediaRecorder.start(1000);
+        // Start with timeslice of 2000ms (2 seconds) to avoid short audio chunks that cause "You" transcriptions
+        this.mediaRecorder.start(2000);
       } catch (mediaError) {
         console.warn('Media device not available, using simulation mode:', mediaError);
         
@@ -108,4 +108,4 @@ class AudioRecorder {
       this.timerInterval = null;
     }
   }
-}    
+}        
