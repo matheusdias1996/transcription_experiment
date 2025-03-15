@@ -6,9 +6,69 @@ document.addEventListener('DOMContentLoaded', () => {
   const questionInput = document.getElementById('questionInput');
   const askButton = document.getElementById('askButton');
   const answerOutput = document.getElementById('answerOutput');
+  const translateToLanguage = document.getElementById('translateToLanguage');
 
   const recorder = new AudioRecorder();
   let currentTranscription = '';
+  let originalTranscription = '';
+
+  // Add event listener for language selection change
+  translateToLanguage.addEventListener('change', async () => {
+    console.log('Language changed to:', translateToLanguage.value);
+    if (currentTranscription) {
+      await translateTranscription();
+    }
+  });
+
+  // Function to translate existing transcription
+  async function translateTranscription() {
+    const selectedLanguage = translateToLanguage.value;
+    
+    // If no language is selected, revert to original transcription
+    if (!selectedLanguage) {
+      transcriptionOutput.textContent = originalTranscription || currentTranscription;
+      recordingStatus.textContent = 'Transcription complete';
+      return;
+    }
+    
+    try {
+      recordingStatus.textContent = 'Translating...';
+      
+      const response = await fetch('http://127.0.0.1:5000/api/translate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          text: originalTranscription || currentTranscription,
+          target_language: selectedLanguage
+        })
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Server responded with ${response.status}: ${errorText}`);
+      }
+      
+      const data = await response.json();
+      
+      if (data.error) {
+        recordingStatus.textContent = `Error: ${data.error}`;
+        console.error('Translation error:', data.error);
+        return;
+      }
+      
+      currentTranscription = data.translation;
+      transcriptionOutput.textContent = currentTranscription;
+      
+      const languageName = translateToLanguage.options[translateToLanguage.selectedIndex].text;
+      recordingStatus.textContent = `Transcription translated to ${languageName}`;
+      
+    } catch (error) {
+      console.error('Error translating text:', error);
+      recordingStatus.textContent = `Error: ${error.message}. Check console for details.`;
+    }
+  }
 
   // Recording functionality
   recordButton.addEventListener('click', async () => {
@@ -73,6 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
+      originalTranscription = data.transcription;
       currentTranscription = data.transcription;
       transcriptionOutput.textContent = currentTranscription;
       recordingStatus.textContent = 'Transcription complete';
@@ -131,4 +192,4 @@ document.addEventListener('DOMContentLoaded', () => {
       answerOutput.textContent = `Error: ${error.message}. Check console for details.`;
     }
   });
-}); 
+});         
