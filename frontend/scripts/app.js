@@ -11,6 +11,47 @@ document.addEventListener('DOMContentLoaded', () => {
   const recorder = new AudioRecorder();
   let currentTranscription = '';
   let originalTranscription = '';
+  
+  // Connect to WebSocket server
+  const socket = io('http://127.0.0.1:5000', {
+    transports: ['websocket', 'polling'],
+    reconnection: true,
+    reconnectionAttempts: 5
+  });
+  
+  // Socket event listeners
+  socket.on('connect', () => {
+    console.log('Connected to server');
+  });
+  
+  socket.on('disconnect', () => {
+    console.log('Disconnected from server');
+  });
+  
+  socket.on('transcription_update', data => {
+    currentTranscription = data.transcription;
+    originalTranscription = data.transcription;
+    transcriptionOutput.textContent = currentTranscription;
+    
+    // If a translation is selected, translate the updated transcription
+    if (translateToLanguage.value) {
+      translateTranscription();
+    }
+  });
+  
+  socket.on('answer_update', data => {
+    if (data.final) {
+      // Final message received, update UI if needed
+      recordingStatus.textContent = 'Recording...';
+    } else {
+      answerOutput.textContent = data.answer;
+    }
+  });
+  
+  socket.on('error', data => {
+    console.error('Server error:', data.message);
+    recordingStatus.textContent = `Error: ${data.message}`;
+  });
 
   // Add event listener for language selection change
   translateToLanguage.addEventListener('change', async () => {
@@ -77,8 +118,25 @@ document.addEventListener('DOMContentLoaded', () => {
       recordingStatus.textContent = 'Recording...';
       recordButton.textContent = 'Stop Recording';
       recordButton.classList.add('recording');
-
-      const success = await recorder.startRecording();
+      
+      // Reset transcription
+      socket.emit('reset_transcription');
+      transcriptionOutput.textContent = '';
+      currentTranscription = '';
+      originalTranscription = '';
+      
+      // Start recording with callback for real-time chunks
+      const success = await recorder.startRecording(async (audioChunk) => {
+        // Convert audio chunk to base64
+        const reader = new FileReader();
+        reader.readAsDataURL(audioChunk);
+        reader.onloadend = () => {
+          const base64data = reader.result.split(',')[1];
+          // Send to server
+          socket.emit('audio_chunk', { audio_chunk: base64data });
+        };
+      });
+      
       if (success) {
         recorder.startTimer(time => {
           recordingTime.textContent = time;
@@ -90,17 +148,12 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     } else {
       // Stop recording
-      recordingStatus.textContent = 'Processing...';
+      recordingStatus.textContent = 'Stopped recording';
       recordButton.textContent = 'Start Recording';
       recordButton.classList.remove('recording');
       recorder.stopTimer();
-
-      const audioBlob = await recorder.stopRecording();
-      if (audioBlob) {
-        await transcribeAudio(audioBlob);
-      } else {
-        recordingStatus.textContent = 'No recording to process';
-      }
+      
+      await recorder.stopRecording();
     }
   });
 
@@ -145,7 +198,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Question answering functionality
-  askButton.addEventListener('click', async () => {
+  askButton.addEventListener('click', () => {
     const question = questionInput.value.trim();
 
     if (!question) {
@@ -159,37 +212,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     answerOutput.textContent = 'Thinking...';
-
-    try {
-      const response = await fetch('http://127.0.0.1:5000/api/question', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          question: question,
-          transcription: currentTranscription
-        })
-      });
-
-      // Check if the response is ok before trying to parse JSON
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Server responded with ${response.status}: ${errorText}`);
-      }
-
-      const data = await response.json();
-
-      if (data.error) {
-        answerOutput.textContent = `Error: ${data.error}`;
-        return;
-      }
-
-      answerOutput.textContent = data.answer;
-
-    } catch (error) {
-      console.error('Error getting answer:', error);
-      answerOutput.textContent = `Error: ${error.message}. Check console for details.`;
-    }
+    
+    // Send question to server via WebSocket
+    socket.emit('ask_question', { question: question });
   });
-});         
+});                 
