@@ -34,16 +34,6 @@ def transcribe_audio(audio_file_path):
                 # This fallback is for older OpenAI versions and may not work with current versions
                 # Consider updating your OpenAI package if this is needed
                 raise Exception("OpenAI client version not compatible. Please update to the latest version.")
-                
-                # Handle different response formats
-                if isinstance(response, str):
-                    return response
-                elif hasattr(response, 'text'):
-                    return response.text
-                elif isinstance(response, dict) and 'text' in response:
-                    return response['text']
-                else:
-                    return str(response)
     except Exception as e:
         # Re-raise with more context
         raise Exception(f"Transcription error: {str(e)}")
