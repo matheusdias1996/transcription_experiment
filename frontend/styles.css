@@ -83,3 +83,26 @@ button:disabled {
 .question-section {
   margin-top: 2rem;
 }
+.language-controls {
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+}
+
+.language-controls label {
+  margin-right: 10px;
+  color: #333;
+}
+
+select {
+  padding: 8px;
+  border-radius: 4px;
+  background-color: #f9f9f9;
+  color: #333;
+  border: 1px solid #ddd;
+}
+
+select:focus {
+  outline: none;
+  border-color: #4CAF50;
+}

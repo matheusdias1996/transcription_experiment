@@ -48,6 +48,12 @@ document.addEventListener('DOMContentLoaded', () => {
   async function transcribeAudio(audioBlob) {
     const formData = new FormData();
     formData.append('audio', audioBlob);
+    
+    // Get the selected language for translation
+    const translateToLanguage = document.getElementById('translateToLanguage').value;
+    if (translateToLanguage) {
+      formData.append('translate_to', translateToLanguage);
+    }
 
     try {
       recordingStatus.textContent = 'Connecting to server...';
@@ -75,7 +81,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
       currentTranscription = data.transcription;
       transcriptionOutput.textContent = currentTranscription;
-      recordingStatus.textContent = 'Transcription complete';
+      
+      const translationInfo = translateToLanguage ? 
+        ` (Translated to ${document.getElementById('translateToLanguage').options[document.getElementById('translateToLanguage').selectedIndex].text})` : 
+        '';
+      recordingStatus.textContent = `Transcription complete${translationInfo}`;
 
     } catch (error) {
       console.error('Error transcribing audio:', error);
@@ -131,4 +141,4 @@ document.addEventListener('DOMContentLoaded', () => {
       answerOutput.textContent = `Error: ${error.message}. Check console for details.`;
     }
   });
-}); 
+});  
