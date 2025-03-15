@@ -6,7 +6,6 @@ from dotenv import load_dotenv
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from flask_socketio import SocketIO, emit
-
 from services.question_answering import answer_question, answer_question_stream
 from services.transcription import transcribe_audio, translate_text
 
@@ -117,24 +116,32 @@ def handle_audio_chunk(data):
         # Decode the base64 audio chunk
         audio_data = base64.b64decode(data["audio_chunk"])
 
-        # Save to a temporary file
+        # Check if this is a dummy chunk (for testing environments without microphone)
+        is_dummy = len(audio_data) < 100 and b"dummy" in audio_data
+
+        # Save to a temporary file with proper WAV headers
         temp_path = "temp_chunk.wav"
-        with open(temp_path, "wb") as f:
-            f.write(audio_data)
+
+        # Create a proper WAV file with appropriate headers
+        import wave
+
+        with wave.open(temp_path, "wb") as wav_file:
+            wav_file.setnchannels(1)  # Mono
+            wav_file.setsampwidth(2)  # 16-bit
+            wav_file.setframerate(16000)  # 16kHz (Whisper's preferred sample rate)
+            wav_file.writeframes(audio_data)
 
         try:
-            # Check if this is a dummy chunk (for testing environments without microphone)
-            is_dummy = len(audio_data) < 100 and b"dummy" in audio_data
-            
             if is_dummy:
                 # For dummy data, simulate transcription with sample text
                 import random
+
                 sample_texts = [
                     "This is a simulated transcription.",
                     "Testing the real-time transcription feature.",
                     "The weather today is sunny and warm.",
                     "I'm recording this message for testing purposes.",
-                    "The quick brown fox jumps over the lazy dog."
+                    "The quick brown fox jumps over the lazy dog.",
                 ]
                 chunk_transcription = random.choice(sample_texts)
             else:
@@ -152,6 +159,9 @@ def handle_audio_chunk(data):
             # Clean up
             os.remove(temp_path)
         except Exception as e:
+            # Clean up in case of error
+            if os.path.exists(temp_path):
+                os.remove(temp_path)
             emit("error", {"message": str(e)})
     except Exception as e:
         emit("error", {"message": f"Error processing audio chunk: {str(e)}"})
@@ -178,17 +188,35 @@ def handle_question(data):
         # For testing without API key, use simulated streaming response
         if not os.getenv("OPENAI_API_KEY"):
             # Simulate streaming response
-            emit("answer_update", {"answer": "Based on the transcription, ", "final": False})
+            emit(
+                "answer_update",
+                {"answer": "Based on the transcription, ", "final": False},
+            )
             socketio.sleep(1)
-            emit("answer_update", {"answer": "Based on the transcription, the weather ", "final": False})
+            emit(
+                "answer_update",
+                {"answer": "Based on the transcription, the weather ", "final": False},
+            )
             socketio.sleep(1)
-            emit("answer_update", {"answer": "Based on the transcription, the weather today is ", "final": False})
+            emit(
+                "answer_update",
+                {
+                    "answer": "Based on the transcription, the weather today is ",
+                    "final": False,
+                },
+            )
             socketio.sleep(1)
-            emit("answer_update", {"answer": "Based on the transcription, the weather today is sunny and warm.", "final": False})
+            emit(
+                "answer_update",
+                {
+                    "answer": "Based on the transcription, the weather today is sunny and warm.",
+                    "final": False,
+                },
+            )
             socketio.sleep(1)
             emit("answer_update", {"answer": "", "final": True})
             return
-            
+
         # Get streaming answer
         answer_stream = answer_question_stream(question, ongoing_transcription)
 
