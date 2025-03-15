@@ -13,7 +13,16 @@ class AudioRecorder {
     try {
       // Try to get user media
       try {
-        this.stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        console.log('Requesting microphone access for real transcription...');
+        this.stream = await navigator.mediaDevices.getUserMedia({ 
+          audio: {
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true
+          } 
+        });
+        
+        console.log('Microphone access granted, creating MediaRecorder');
         this.mediaRecorder = new MediaRecorder(this.stream);
         
         this.audioChunks = [];
@@ -21,6 +30,7 @@ class AudioRecorder {
         this.onDataAvailable = onDataAvailable;
         
         this.mediaRecorder.addEventListener('dataavailable', event => {
+          console.log(`Audio chunk received: ${event.data.size} bytes`);
           this.audioChunks.push(event.data);
           
           // Call the callback with the latest chunk if provided
@@ -31,10 +41,13 @@ class AudioRecorder {
         
         // Start with timeslice of 2000ms (2 seconds) to avoid short audio chunks that cause "You" transcriptions
         this.mediaRecorder.start(2000);
+        console.log('MediaRecorder started with 2000ms timeslice');
       } catch (mediaError) {
-        console.warn('Media device not available, using simulation mode:', mediaError);
+        console.error('ERROR: Microphone access denied or not available:', mediaError);
+        alert('Microphone access is required for real transcription. Please allow microphone access and reload the page.');
         
-        // Simulate recording with dummy data in environments without microphone access
+        // We'll still set up a fallback, but alert the user that real mic is needed
+        console.warn('Falling back to simulation mode, but real microphone is recommended');
         this.isRecording = true;
         this.onDataAvailable = onDataAvailable;
         
@@ -108,4 +121,4 @@ class AudioRecorder {
       this.timerInterval = null;
     }
   }
-}        
+}                
