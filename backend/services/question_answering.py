@@ -47,7 +47,11 @@ def answer_question(question, context):
     try:
         if OPENAI_NEW_API:
             # For newer OpenAI client versions
-            client = OpenAI(api_key=api_key)
+            # Create OpenAI client with trust_env=False to avoid proxy issues
+            import httpx
+
+            http_client = httpx.Client(trust_env=False)
+            client = OpenAI(api_key=api_key, http_client=http_client)
             response = client.chat.completions.create(
                 model="gpt-3.5-turbo",
                 messages=[
@@ -111,7 +115,11 @@ def answer_question_stream(question, context):
     try:
         if OPENAI_NEW_API:
             # Use the streaming API with newer client
-            client = OpenAI(api_key=api_key)
+            # Create OpenAI client with trust_env=False to avoid proxy issues
+            import httpx
+
+            http_client = httpx.Client(trust_env=False)
+            client = OpenAI(api_key=api_key, http_client=http_client)
             response = client.chat.completions.create(
                 model="gpt-3.5-turbo",
                 messages=[
