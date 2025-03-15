@@ -1,0 +1,12 @@
+{
+  "name": "transcription_experiment",
+  "version": "1.0.0",
+  "description": "Voice recording and transcription website",
+  "scripts": {
+    "lint": "eslint frontend/scripts/*.js",
+    "lint:fix": "eslint frontend/scripts/*.js --fix"
+  },
+  "devDependencies": {
+    "eslint": "^8.42.0"
+  }
+}
