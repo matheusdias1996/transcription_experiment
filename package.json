@@ -3,10 +3,21 @@
   "version": "1.0.0",
   "description": "Voice recording and transcription website",
   "scripts": {
+    "start": "concurrently \"npm run start:backend\" \"npm run start:frontend\"",
+    "start:backend": "cd backend && python app.py",
+    "start:frontend": "cd frontend && python -m http.server 8000",
     "lint": "eslint frontend/scripts/*.js",
-    "lint:fix": "eslint frontend/scripts/*.js --fix"
+    "lint:fix": "eslint frontend/scripts/*.js --fix",
+    "format:python": "black backend/ && isort backend/",
+    "lint:all": "npm run lint && npm run format:python",
+    "test": "npm run test:backend && npm run test:frontend",
+    "test:backend": "cd backend && pytest -v",
+    "test:frontend": "jest"
   },
   "devDependencies": {
-    "eslint": "^8.42.0"
+    "concurrently": "^7.6.0",
+    "eslint": "^8.42.0",
+    "jest": "^29.5.0",
+    "jest-environment-jsdom": "^29.5.0"
   }
 }
