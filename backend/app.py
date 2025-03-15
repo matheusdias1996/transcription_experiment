@@ -113,8 +113,16 @@ def handle_audio_chunk(data):
     global ongoing_transcription
 
     try:
+        # Get the base64 audio chunk
+        audio_chunk_data = data["audio_chunk"]
+
+        # Check if the data contains a data URL prefix (e.g., "data:audio/wav;base64,")
+        if "base64," in audio_chunk_data:
+            # Extract the base64 part after the prefix
+            audio_chunk_data = audio_chunk_data.split("base64,")[1]
+
         # Decode the base64 audio chunk
-        audio_data = base64.b64decode(data["audio_chunk"])
+        audio_data = base64.b64decode(audio_chunk_data)
 
         # Check if this is a dummy chunk (for testing environments without microphone)
         is_dummy = len(audio_data) < 100 and b"dummy" in audio_data
@@ -164,6 +172,11 @@ def handle_audio_chunk(data):
                 os.remove(temp_path)
             emit("error", {"message": str(e)})
     except Exception as e:
+        import traceback
+
+        error_details = traceback.format_exc()
+        print(f"Audio chunk processing error: {str(e)}")
+        print(f"Error details: {error_details}")
         emit("error", {"message": f"Error processing audio chunk: {str(e)}"})
 
 
