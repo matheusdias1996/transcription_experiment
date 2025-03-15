@@ -13,7 +13,7 @@ A web application for real-time voice recording, transcription, and question ans
 
 1. Install backend dependencies:
    ```
-   pip install -r requirements.txt flask-socketio eventlet python-socketio
+   pip install -r requirements.txt
    ```
 
 2. Install frontend dependencies:
